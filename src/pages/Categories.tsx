@@ -13,6 +13,7 @@ import {
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useEffect, useState } from 'react';
+import api from '../api/api';
 
 type Category = {
   id: string;
@@ -22,8 +23,6 @@ type Category = {
   isActive: boolean;
   createdAt: string;
 };
-
-const API_BASE_URL = 'https://gyaanbucks-backend-production.up.railway.app';
 
 export default function Categories() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -35,9 +34,8 @@ export default function Categories() {
   const loadCategories = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE_URL}/category`);
-      const data = await res.json();
-      setCategories(Array.isArray(data) ? data : []);
+      const res = await api.get('/category');
+      setCategories(Array.isArray(res.data) ? res.data : []);
     } catch {
       message.error('Failed to load categories');
     } finally {
@@ -82,26 +80,15 @@ export default function Categories() {
         isActive: values.isActive ?? true,
       };
 
-      const url = editingCategory
-        ? `${API_BASE_URL}/category/${editingCategory.id}`
-        : `${API_BASE_URL}/category`;
-
-      const method = editingCategory ? 'PATCH' : 'POST';
-
-      const res = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        throw new Error('Save failed');
+      if (editingCategory) {
+        await api.patch(`/category/${editingCategory.id}`, payload);
+      } else {
+        await api.post('/category', payload);
       }
 
       message.success(editingCategory ? 'Category updated' : 'Category added');
       setModalOpen(false);
+      setEditingCategory(null);
       form.resetFields();
       loadCategories();
     } catch {
@@ -111,14 +98,7 @@ export default function Categories() {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/category/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (!res.ok) {
-        throw new Error('Delete failed');
-      }
-
+      await api.delete(`/category/${id}`);
       message.success('Category deleted');
       loadCategories();
     } catch {
@@ -219,7 +199,11 @@ export default function Categories() {
       <Modal
         title={editingCategory ? 'Edit Category' : 'Add Category'}
         open={modalOpen}
-        onCancel={() => setModalOpen(false)}
+        onCancel={() => {
+          setModalOpen(false);
+          setEditingCategory(null);
+          form.resetFields();
+        }}
         onOk={handleSubmit}
         okText={editingCategory ? 'Update' : 'Create'}
         destroyOnHidden
@@ -230,7 +214,7 @@ export default function Categories() {
             name="name"
             rules={[{ required: true, message: 'Please enter category name' }]}
           >
-            <Input placeholder="Example: General Knowledge" />
+            <Input placeholder="Example: General" />
           </Form.Item>
 
           <Form.Item label="Description" name="description">
@@ -238,12 +222,12 @@ export default function Categories() {
               rows={3}
               maxLength={140}
               showCount
-              placeholder="Example: Improve your general knowledge with quick quizzes."
+              placeholder="Example: Test your overall knowledge."
             />
           </Form.Item>
 
           <Form.Item label="Icon" name="icon">
-            <Input placeholder="Example: 🧠" maxLength={4} />
+            <Input placeholder="Example: 📚" maxLength={4} />
           </Form.Item>
 
           <Form.Item
