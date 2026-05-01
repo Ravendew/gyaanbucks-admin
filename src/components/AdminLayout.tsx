@@ -2,12 +2,13 @@ import {
   AppstoreOutlined,
   DashboardOutlined,
   FileTextOutlined,
+  LogoutOutlined,
   QuestionCircleOutlined,
   SettingOutlined,
   TrophyOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Layout, Menu, Typography } from 'antd';
+import { Button, Layout, Menu, Typography } from 'antd';
 import type { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './AdminLayout.css';
@@ -22,42 +23,20 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const handleLogout = () => {
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_user');
+    navigate('/login', { replace: true });
+  };
+
   const menuItems = [
-    {
-      key: '/',
-      icon: <DashboardOutlined />,
-      label: 'Dashboard',
-    },
-    {
-      key: '/categories',
-      icon: <AppstoreOutlined />,
-      label: 'Categories',
-    },
-    {
-      key: '/quizzes',
-      icon: <QuestionCircleOutlined />,
-      label: 'Quizzes',
-    },
-    {
-      key: '/blogs',
-      icon: <FileTextOutlined />,
-      label: 'Blogs',
-    },
-    {
-      key: '/redeem',
-      icon: <TrophyOutlined />,
-      label: 'Redeem Requests',
-    },
-    {
-      key: '/users',
-      icon: <UserOutlined />,
-      label: 'Users',
-    },
-    {
-      key: '/settings',
-      icon: <SettingOutlined />,
-      label: 'Settings',
-    },
+    { key: '/', icon: <DashboardOutlined />, label: 'Dashboard' },
+    { key: '/categories', icon: <AppstoreOutlined />, label: 'Categories' },
+    { key: '/quizzes', icon: <QuestionCircleOutlined />, label: 'Quizzes' },
+    { key: '/blogs', icon: <FileTextOutlined />, label: 'Blogs' },
+    { key: '/redeem', icon: <TrophyOutlined />, label: 'Redeem Requests' },
+    { key: '/users', icon: <UserOutlined />, label: 'Users' },
+    { key: '/settings', icon: <SettingOutlined />, label: 'Settings' },
   ];
 
   return (
@@ -88,7 +67,18 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </Typography.Title>
           </div>
 
-          <div className="admin-status">● Backend Connected</div>
+          <div className="admin-header-actions">
+            <div className="admin-status">● Backend Connected</div>
+
+            <Button
+              danger
+              icon={<LogoutOutlined />}
+              onClick={handleLogout}
+              className="admin-logout-btn"
+            >
+              Logout
+            </Button>
+          </div>
         </Header>
 
         <Content className="admin-content">{children}</Content>

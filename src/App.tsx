@@ -8,22 +8,103 @@ import Users from './pages/Users';
 import Categories from './pages/Categories';
 import Settings from './pages/Settings';
 import Blogs from './pages/Blogs';
+import Login from './pages/login/Login';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
     <BrowserRouter>
-      <AdminLayout>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/quizzes" element={<Quizzes />} />
-          <Route path="/quizzes/:quizId/questions" element={<Questions />} />
-          <Route path="/redeem" element={<RedeemRequests />} />
-          <Route path="/users" element={<Users />} />
-          <Route path="/categories" element={<Categories />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/blogs" element={<Blogs />} />
-        </Routes>
-      </AdminLayout>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <AdminLayout>
+                <Dashboard />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/quizzes"
+          element={
+            <ProtectedRoute>
+              <AdminLayout>
+                <Quizzes />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/quizzes/:quizId/questions"
+          element={
+            <ProtectedRoute>
+              <AdminLayout>
+                <Questions />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/redeem"
+          element={
+            <ProtectedRoute>
+              <AdminLayout>
+                <RedeemRequests />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute>
+              <AdminLayout>
+                <Users />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/categories"
+          element={
+            <ProtectedRoute>
+              <AdminLayout>
+                <Categories />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <AdminLayout>
+                <Settings />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/blogs"
+          element={
+            <ProtectedRoute>
+              <AdminLayout>
+                <Blogs />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
     </BrowserRouter>
   );
 }

@@ -75,6 +75,12 @@
   font-weight: 950 !important;
 }
 
+.admin-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .admin-status {
   background: #ecfdf5;
   color: #065f46;
@@ -83,6 +89,12 @@
   border-radius: 999px;
   font-size: 12px;
   font-weight: 900;
+}
+
+.admin-logout-btn {
+  height: 38px;
+  border-radius: 999px;
+  font-weight: 800;
 }
 
 .admin-content {
