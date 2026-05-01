@@ -1,0 +1,91 @@
+.admin-shell {
+  min-height: 100vh;
+  background: #f7f9fc;
+}
+
+.admin-sider {
+  background: linear-gradient(180deg, #065f46 0%, #043d31 100%) !important;
+  border-right: 1px solid rgba(248, 197, 44, 0.2);
+  box-shadow: 12px 0 40px rgba(6, 95, 70, 0.14);
+}
+
+.admin-logo {
+  height: 78px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  font-size: 24px;
+  font-weight: 950;
+  letter-spacing: -0.8px;
+}
+
+.admin-logo span {
+  color: #ffffff;
+}
+
+.admin-logo strong {
+  color: #f8c52c;
+  margin-left: 2px;
+}
+
+.admin-menu {
+  background: transparent !important;
+  border-inline-end: none !important;
+  padding: 10px 12px;
+}
+
+.admin-menu .ant-menu-item {
+  color: rgba(255, 255, 255, 0.78) !important;
+  height: 46px;
+  border-radius: 14px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.admin-menu .ant-menu-item:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.admin-menu .ant-menu-item-selected {
+  color: #065f46 !important;
+  background: linear-gradient(135deg, #f8c52c, #fff7d6) !important;
+}
+
+.admin-header {
+  height: 82px;
+  background: rgba(255, 255, 255, 0.86) !important;
+  border-bottom: 1px solid rgba(22, 163, 74, 0.1);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px !important;
+}
+
+.admin-welcome {
+  color: #6b7280 !important;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.admin-title {
+  margin: 2px 0 0 !important;
+  color: #101827 !important;
+  font-weight: 950 !important;
+}
+
+.admin-status {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid rgba(22, 163, 74, 0.16);
+  padding: 9px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.admin-content {
+  padding: 28px;
+  background: linear-gradient(180deg, #f7f9fc, #ecfdf5);
+}
