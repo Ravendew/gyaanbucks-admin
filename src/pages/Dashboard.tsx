@@ -1,7 +1,7 @@
 import { Card, Col, Row, Typography } from 'antd';
 import { useEffect, useState } from 'react';
 
-const API_BASE = 'http://localhost:5000';
+const API_BASE = 'http://https://gyaanbucks-backend-production.up.railway.app';
 
 type Stats = {
   totalQuizzes: number;

@@ -322,7 +322,7 @@ export default function Blogs() {
             <Space direction="vertical" size={12}>
               <Upload
                 name="file"
-                action="http://localhost:5000/upload/image"
+                action="http://https://gyaanbucks-backend-production.up.railway.app/upload/image"
                 showUploadList={false}
                 accept="image/png,image/jpeg,image/jpg,image/webp"
                 onChange={handleUploadChange}

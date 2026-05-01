@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Button, Table, Tag, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
-const API_BASE = 'http://localhost:5000';
+const API_BASE = 'http://https://gyaanbucks-backend-production.up.railway.app';
 
 type RedeemRequest = {
   id: string;
