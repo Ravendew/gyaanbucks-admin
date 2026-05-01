@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Card, Table, Tag, Typography, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 
-const API_BASE = 'http://https://gyaanbucks-backend-production.up.railway.app';
+const API_BASE = 'https://gyaanbucks-backend-production.up.railway.app';
 
 type UserRow = {
   id: string;

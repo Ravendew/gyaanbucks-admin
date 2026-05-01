@@ -23,8 +23,7 @@ type Category = {
   createdAt: string;
 };
 
-const API_BASE_URL =
-  'http://https://gyaanbucks-backend-production.up.railway.app';
+const API_BASE_URL = 'https://gyaanbucks-backend-production.up.railway.app';
 
 export default function Categories() {
   const [categories, setCategories] = useState<Category[]>([]);
