@@ -18,7 +18,7 @@ const Login = () => {
       setLoading(true);
 
       const res = await axios.post(
-        'http://localhost:5000/admin-auth/login',
+        'https://gyaanbucks-backend-production.up.railway.app/admin-auth/login',
         values,
       );
 
