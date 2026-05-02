@@ -17,6 +17,8 @@ import type { UploadChangeParam } from 'antd/es/upload';
 import type { UploadFile } from 'antd/es/upload/interface';
 import type { ColumnsType } from 'antd/es/table';
 import { UploadOutlined } from '@ant-design/icons';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 import { useEffect, useMemo, useState } from 'react';
 import {
   createBlog,
@@ -26,6 +28,10 @@ import {
   type Blog,
   type BlogPayload,
 } from '../api/blogApi';
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  'https://gyaanbucks-backend-production.up.railway.app';
 
 function makeSlug(title: string) {
   return title
@@ -40,6 +46,27 @@ type UploadResponse = {
   filename: string;
   url: string;
 };
+
+const editorModules = {
+  toolbar: [
+    [{ header: [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline'],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    ['link', 'blockquote'],
+    ['clean'],
+  ],
+};
+
+const editorFormats = [
+  'header',
+  'bold',
+  'italic',
+  'underline',
+  'list',
+  'bullet',
+  'link',
+  'blockquote',
+];
 
 export default function Blogs() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
@@ -72,10 +99,20 @@ export default function Blogs() {
     setEditingBlog(null);
     setPreviewImage('');
     form.resetFields();
+
     form.setFieldsValue({
+      title: '',
+      slug: '',
+      excerpt: '',
+      content: '',
       imageUrl: '',
+      category: '',
+      tags: '',
+      metaTitle: '',
+      metaDesc: '',
       isPublished: true,
     });
+
     setModalOpen(true);
   };
 
@@ -132,13 +169,32 @@ export default function Blogs() {
     }
   };
 
+  const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const title = event.target.value;
+    const currentSlug = form.getFieldValue('slug');
+
+    if (!editingBlog && !currentSlug) {
+      form.setFieldsValue({
+        slug: makeSlug(title),
+      });
+    }
+  };
+
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
 
+      const cleanContent = values.content?.trim();
+
+      if (!cleanContent || cleanContent === '<p><br></p>') {
+        message.error('Please add blog content');
+        return;
+      }
+
       const payload: BlogPayload = {
         ...values,
         slug: values.slug?.trim() || makeSlug(values.title),
+        content: cleanContent,
         imageUrl: values.imageUrl || '',
         tags: values.tags || '',
         metaTitle: values.metaTitle || values.title,
@@ -244,6 +300,7 @@ export default function Blogs() {
               title="Delete blog?"
               description="This action cannot be undone."
               okText="Delete"
+              cancelText="Cancel"
               okButtonProps={{ danger: true }}
               onConfirm={() => handleDelete(record.id)}
             >
@@ -269,36 +326,52 @@ export default function Blogs() {
     >
       <Table
         rowKey="id"
+        loading={loading}
         columns={columns}
         dataSource={blogs}
-        loading={loading}
-        pagination={{ pageSize: 8 }}
+        pagination={{ pageSize: 10 }}
       />
 
       <Modal
         title={editingBlog ? 'Edit Blog' : 'Add Blog'}
         open={modalOpen}
+        width={1000}
         onCancel={() => {
           setModalOpen(false);
           setPreviewImage('');
+          form.resetFields();
         }}
         onOk={handleSave}
         confirmLoading={saving}
         okText={editingBlog ? 'Update Blog' : 'Create Blog'}
-        width={900}
         destroyOnHidden
       >
-        <Form layout="vertical" form={form}>
+        <Form
+          form={form}
+          layout="vertical"
+          requiredMark
+          initialValues={{
+            isPublished: true,
+          }}
+        >
           <Form.Item
-            label="Blog Title"
+            label="Title"
             name="title"
             rules={[{ required: true, message: 'Please enter blog title' }]}
           >
-            <Input placeholder="Example: How to earn points from quizzes" />
+            <Input
+              placeholder="Blog title"
+              onChange={handleTitleChange}
+              maxLength={120}
+            />
           </Form.Item>
 
-          <Form.Item label="Slug" name="slug">
-            <Input placeholder="Auto generated if empty" />
+          <Form.Item
+            label="Slug"
+            name="slug"
+            rules={[{ required: true, message: 'Please enter blog slug' }]}
+          >
+            <Input placeholder="example-blog-slug" />
           </Form.Item>
 
           <Form.Item
@@ -306,73 +379,92 @@ export default function Blogs() {
             name="excerpt"
             rules={[{ required: true, message: 'Please enter short excerpt' }]}
           >
-            <Input.TextArea rows={3} placeholder="Short SEO-friendly summary" />
+            <Input.TextArea
+              rows={3}
+              placeholder="Short blog summary for cards and SEO"
+              maxLength={300}
+              showCount
+            />
           </Form.Item>
 
           <Form.Item
             label="Content"
             name="content"
-            rules={[{ required: true, message: 'Please enter blog content' }]}
-            extra="Markdown supported: use [link text](https://example.com), ## Heading, bullet lists, and paragraphs."
+            rules={[{ required: true, message: 'Please add blog content' }]}
           >
-            <Input.TextArea rows={10} placeholder="Full blog content" />
+            <ReactQuill
+              theme="snow"
+              modules={editorModules}
+              formats={editorFormats}
+              placeholder="Write your full blog content here..."
+              style={{
+                background: '#fff',
+                minHeight: 320,
+                marginBottom: 44,
+              }}
+            />
           </Form.Item>
 
-          <Form.Item label="Blog Image">
-            <Space direction="vertical" size={12}>
-              <Upload
-                name="file"
-                action="https://gyaanbucks-backend-production.up.railway.app/upload/image"
-                showUploadList={false}
-                accept="image/png,image/jpeg,image/jpg,image/webp"
-                onChange={handleUploadChange}
-              >
-                <Button icon={<UploadOutlined />} loading={uploading}>
-                  Upload Image
-                </Button>
-              </Upload>
-
-              {previewImage ? (
-                <Image
-                  src={previewImage}
-                  alt="Blog preview"
-                  width={180}
-                  height={100}
-                  style={{ objectFit: 'cover', borderRadius: 12 }}
-                />
-              ) : null}
-            </Space>
+          <Form.Item label="Featured Image" name="imageUrl">
+            <Input placeholder="Image URL will appear here after upload" />
           </Form.Item>
 
-          <Form.Item name="imageUrl" hidden>
-            <Input />
-          </Form.Item>
+          <Upload
+            name="file"
+            action={`${API_BASE_URL}/upload`}
+            showUploadList={false}
+            accept="image/*"
+            onChange={handleUploadChange}
+          >
+            <Button icon={<UploadOutlined />} loading={uploading}>
+              Upload Blog Image
+            </Button>
+          </Upload>
+
+          {previewImage && (
+            <div style={{ marginTop: 16 }}>
+              <Image
+                src={previewImage}
+                alt="Preview"
+                width={220}
+                height={130}
+                style={{ objectFit: 'cover', borderRadius: 12 }}
+              />
+            </div>
+          )}
 
           <Form.Item
             label="Category"
             name="category"
             rules={[{ required: true, message: 'Please enter category' }]}
+            style={{ marginTop: 18 }}
           >
-            <Input placeholder="Example: Quiz Rewards" />
+            <Input placeholder="Example: Online Earning" />
           </Form.Item>
 
           <Form.Item label="Tags" name="tags">
-            <Input placeholder="quiz, rewards, earning, learning" />
+            <Input placeholder="quiz earning, online earning, gyaanbucks" />
           </Form.Item>
 
           <Form.Item label="Meta Title" name="metaTitle">
-            <Input placeholder="SEO title. If empty, blog title will be used." />
+            <Input placeholder="SEO title" maxLength={70} showCount />
           </Form.Item>
 
           <Form.Item label="Meta Description" name="metaDesc">
             <Input.TextArea
               rows={3}
-              placeholder="SEO description. If empty, excerpt will be used."
+              placeholder="SEO meta description"
+              maxLength={160}
+              showCount
             />
           </Form.Item>
 
-          <Form.Item label="Publish" name="isPublished" valuePropName="checked">
-            <Switch checkedChildren="Published" unCheckedChildren="Draft" />
+          <Form.Item
+            label="Published"
+            name="isPublished"
+            valuePropName="checked"
+          >
+            <Switch />
           </Form.Item>
         </Form>
       </Modal>
