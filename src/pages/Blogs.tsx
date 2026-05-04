@@ -324,6 +324,30 @@ export default function Blogs() {
         </Button>
       }
     >
+      <style>
+        {`
+          .blog-editor-box .ql-toolbar {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: #ffffff;
+            border-radius: 6px 6px 0 0;
+          }
+
+          .blog-editor-box .ql-container {
+            height: 560px;
+            background: #ffffff;
+            border-radius: 0 0 6px 6px;
+          }
+
+          .blog-editor-box .ql-editor {
+            min-height: 560px;
+            font-size: 15px;
+            line-height: 1.7;
+          }
+        `}
+      </style>
+
       <Table
         rowKey="id"
         loading={loading}
@@ -392,17 +416,14 @@ export default function Blogs() {
             name="content"
             rules={[{ required: true, message: 'Please add blog content' }]}
           >
-            <ReactQuill
-              theme="snow"
-              modules={editorModules}
-              formats={editorFormats}
-              placeholder="Write your full blog content here..."
-              style={{
-                background: '#fff',
-                minHeight: 320,
-                marginBottom: 44,
-              }}
-            />
+            <div className="blog-editor-box">
+              <ReactQuill
+                theme="snow"
+                modules={editorModules}
+                formats={editorFormats}
+                placeholder="Write your full blog content here..."
+              />
+            </div>
           </Form.Item>
 
           <Form.Item label="Featured Image" name="imageUrl">
