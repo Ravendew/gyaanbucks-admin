@@ -19,6 +19,9 @@ import { api } from '../api/api';
 
 const { Title, Text } = Typography;
 
+const PAGE_KEY = 'gyaanbucks_quizzes_page';
+const PAGE_SIZE_KEY = 'gyaanbucks_quizzes_page_size';
+
 type Quiz = {
   id: string;
   slug: string;
@@ -48,6 +51,12 @@ export default function Quizzes() {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null);
+  const [currentPage, setCurrentPage] = useState(() => {
+    return Number(localStorage.getItem(PAGE_KEY) || 1);
+  });
+  const [pageSize, setPageSize] = useState(() => {
+    return Number(localStorage.getItem(PAGE_SIZE_KEY) || 10);
+  });
 
   const [form] = Form.useForm();
 
@@ -292,7 +301,18 @@ export default function Quizzes() {
           columns={columns}
           dataSource={quizzes}
           loading={loading}
-          pagination={{ pageSize: 10 }}
+          pagination={{
+            current: currentPage,
+            pageSize,
+            showSizeChanger: true,
+            pageSizeOptions: ['10', '20', '50'],
+            onChange: (page, size) => {
+              setCurrentPage(page);
+              setPageSize(size);
+              localStorage.setItem(PAGE_KEY, String(page));
+              localStorage.setItem(PAGE_SIZE_KEY, String(size));
+            },
+          }}
         />
       </div>
 

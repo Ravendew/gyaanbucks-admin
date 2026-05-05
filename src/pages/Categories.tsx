@@ -25,6 +25,9 @@ type Category = {
   createdAt: string;
 };
 
+const PAGE_KEY = 'gyaanbucks_categories_page';
+const PAGE_SIZE_KEY = 'gyaanbucks_categories_page_size';
+
 export default function Categories() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
@@ -32,7 +35,12 @@ export default function Categories() {
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(() => {
+    return Number(localStorage.getItem(PAGE_KEY) || 1);
+  });
+  const [pageSize, setPageSize] = useState(() => {
+    return Number(localStorage.getItem(PAGE_SIZE_KEY) || 10);
+  });
   const [form] = Form.useForm();
 
   const sortedCategories = useMemo(() => {
@@ -40,13 +48,18 @@ export default function Categories() {
       const posA = Number(a.position || 0);
       const posB = Number(b.position || 0);
 
-      if (posA !== posB) {
-        return posA - posB;
-      }
+      if (posA !== posB) return posA - posB;
 
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
   }, [categories]);
+
+  const normalizePositions = (list: Category[]) => {
+    return list.map((item, index) => ({
+      ...item,
+      position: index + 1,
+    }));
+  };
 
   const loadCategories = async () => {
     try {
@@ -135,12 +148,42 @@ export default function Categories() {
     const [draggedItem] = currentList.splice(dragIndex, 1);
     currentList.splice(dropIndex, 0, draggedItem);
 
-    const reorderedList = currentList.map((item, index) => ({
-      ...item,
-      position: index + 1,
-    }));
+    setCategories(normalizePositions(currentList));
+  };
 
-    setCategories(reorderedList);
+  const moveToTop = (record: Category) => {
+    const list = sortedCategories.filter((item) => item.id !== record.id);
+    setCategories(normalizePositions([record, ...list]));
+    setCurrentPage(1);
+    localStorage.setItem(PAGE_KEY, '1');
+  };
+
+  const moveUp = (record: Category) => {
+    const list = [...sortedCategories];
+    const index = list.findIndex((item) => item.id === record.id);
+
+    if (index <= 0) return;
+
+    [list[index - 1], list[index]] = [list[index], list[index - 1]];
+    setCategories(normalizePositions(list));
+
+    const newPage = Math.ceil(index / pageSize);
+    setCurrentPage(newPage);
+    localStorage.setItem(PAGE_KEY, String(newPage));
+  };
+
+  const moveDown = (record: Category) => {
+    const list = [...sortedCategories];
+    const index = list.findIndex((item) => item.id === record.id);
+
+    if (index === -1 || index >= list.length - 1) return;
+
+    [list[index], list[index + 1]] = [list[index + 1], list[index]];
+    setCategories(normalizePositions(list));
+
+    const newPage = Math.ceil((index + 2) / pageSize);
+    setCurrentPage(newPage);
+    localStorage.setItem(PAGE_KEY, String(newPage));
   };
 
   const handleSaveOrder = async () => {
@@ -169,7 +212,7 @@ export default function Categories() {
       width: 90,
       render: (_, __, index) => (
         <Typography.Text type="secondary">
-          #{(currentPage - 1) * 10 + index + 1}
+          #{(currentPage - 1) * pageSize + index + 1}
         </Typography.Text>
       ),
     },
@@ -224,8 +267,25 @@ export default function Categories() {
     {
       title: 'Created',
       dataIndex: 'createdAt',
-      width: 180,
+      width: 160,
       render: (createdAt) => new Date(createdAt).toLocaleDateString(),
+    },
+    {
+      title: 'Reorder',
+      width: 230,
+      render: (_, record) => (
+        <Space>
+          <Button size="small" onClick={() => moveToTop(record)}>
+            Top
+          </Button>
+          <Button size="small" onClick={() => moveUp(record)}>
+            Up
+          </Button>
+          <Button size="small" onClick={() => moveDown(record)}>
+            Down
+          </Button>
+        </Space>
+      ),
     },
     {
       title: 'Actions',
@@ -261,7 +321,7 @@ export default function Categories() {
             Categories
           </Typography.Title>
           <Typography.Text type="secondary">
-            Manage quiz categories shown on frontend. Drag rows and save order.
+            Drag rows, use Top/Up/Down, then save order.
           </Typography.Text>
         </div>
 
@@ -283,8 +343,15 @@ export default function Categories() {
         dataSource={sortedCategories}
         pagination={{
           current: currentPage,
-          pageSize: 10,
-          onChange: (page) => setCurrentPage(page),
+          pageSize,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '20', '50'],
+          onChange: (page, size) => {
+            setCurrentPage(page);
+            setPageSize(size);
+            localStorage.setItem(PAGE_KEY, String(page));
+            localStorage.setItem(PAGE_SIZE_KEY, String(size));
+          },
         }}
         onRow={(record) => ({
           draggable: true,
