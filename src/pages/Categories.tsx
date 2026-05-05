@@ -12,7 +12,7 @@ import {
   Typography,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import api from '../api/api';
 
 type Category = {
@@ -20,6 +20,7 @@ type Category = {
   name: string;
   icon: string;
   description: string;
+  position: number;
   isActive: boolean;
   createdAt: string;
 };
@@ -27,9 +28,25 @@ type Category = {
 export default function Categories() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
+  const [savingOrder, setSavingOrder] = useState(false);
+  const [draggedId, setDraggedId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [form] = Form.useForm();
+
+  const sortedCategories = useMemo(() => {
+    return [...categories].sort((a, b) => {
+      const posA = Number(a.position || 0);
+      const posB = Number(b.position || 0);
+
+      if (posA !== posB) {
+        return posA - posB;
+      }
+
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }, [categories]);
 
   const loadCategories = async () => {
     try {
@@ -106,7 +123,72 @@ export default function Categories() {
     }
   };
 
+  const moveCategory = (dragId: string, dropId: string) => {
+    if (dragId === dropId) return;
+
+    const currentList = [...sortedCategories];
+    const dragIndex = currentList.findIndex((item) => item.id === dragId);
+    const dropIndex = currentList.findIndex((item) => item.id === dropId);
+
+    if (dragIndex === -1 || dropIndex === -1) return;
+
+    const [draggedItem] = currentList.splice(dragIndex, 1);
+    currentList.splice(dropIndex, 0, draggedItem);
+
+    const reorderedList = currentList.map((item, index) => ({
+      ...item,
+      position: index + 1,
+    }));
+
+    setCategories(reorderedList);
+  };
+
+  const handleSaveOrder = async () => {
+    try {
+      setSavingOrder(true);
+
+      const items = sortedCategories.map((category, index) => ({
+        id: category.id,
+        position: index + 1,
+      }));
+
+      await api.post('/category/reorder', { items });
+
+      message.success('Category order saved');
+      loadCategories();
+    } catch {
+      message.error('Failed to save category order');
+    } finally {
+      setSavingOrder(false);
+    }
+  };
+
   const columns: ColumnsType<Category> = [
+    {
+      title: 'Order',
+      width: 90,
+      render: (_, __, index) => (
+        <Typography.Text type="secondary">
+          #{(currentPage - 1) * 10 + index + 1}
+        </Typography.Text>
+      ),
+    },
+    {
+      title: 'Drag',
+      width: 80,
+      render: () => (
+        <Typography.Text
+          style={{
+            cursor: 'grab',
+            fontSize: 20,
+            color: '#999',
+            userSelect: 'none',
+          }}
+        >
+          ☰
+        </Typography.Text>
+      ),
+    },
     {
       title: 'Icon',
       dataIndex: 'icon',
@@ -179,21 +261,52 @@ export default function Categories() {
             Categories
           </Typography.Title>
           <Typography.Text type="secondary">
-            Manage quiz categories shown on frontend.
+            Manage quiz categories shown on frontend. Drag rows and save order.
           </Typography.Text>
         </div>
 
-        <Button type="primary" onClick={openAddModal}>
-          Add Category
-        </Button>
+        <Space>
+          <Button onClick={handleSaveOrder} loading={savingOrder}>
+            Save Order
+          </Button>
+
+          <Button type="primary" onClick={openAddModal}>
+            Add Category
+          </Button>
+        </Space>
       </Space>
 
       <Table
         rowKey="id"
         loading={loading}
         columns={columns}
-        dataSource={categories}
-        pagination={{ pageSize: 10 }}
+        dataSource={sortedCategories}
+        pagination={{
+          current: currentPage,
+          pageSize: 10,
+          onChange: (page) => setCurrentPage(page),
+        }}
+        onRow={(record) => ({
+          draggable: true,
+          onDragStart: () => {
+            setDraggedId(record.id);
+          },
+          onDragOver: (event) => {
+            event.preventDefault();
+          },
+          onDrop: () => {
+            if (draggedId) {
+              moveCategory(draggedId, record.id);
+            }
+            setDraggedId(null);
+          },
+          onDragEnd: () => {
+            setDraggedId(null);
+          },
+          style: {
+            cursor: 'move',
+          },
+        })}
       />
 
       <Modal
