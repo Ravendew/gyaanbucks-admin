@@ -63,7 +63,6 @@ const editorFormats = [
   'italic',
   'underline',
   'list',
-  'bullet',
   'link',
   'blockquote',
 ];
