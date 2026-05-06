@@ -3,13 +3,15 @@ import {
   DashboardOutlined,
   FileTextOutlined,
   LogoutOutlined,
+  MenuOutlined,
   QuestionCircleOutlined,
   SettingOutlined,
   TrophyOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Button, Layout, Menu, Typography } from 'antd';
+import { Button, Drawer, Layout, Menu, Typography } from 'antd';
 import type { ReactNode } from 'react';
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './AdminLayout.css';
 
@@ -22,6 +24,7 @@ type AdminLayoutProps = {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('admin_token');
@@ -39,32 +42,63 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { key: '/settings', icon: <SettingOutlined />, label: 'Settings' },
   ];
 
+  const handleMenuClick = (key: string) => {
+    navigate(key);
+    setMobileMenuOpen(false);
+  };
+
+  const sidebarContent = (
+    <>
+      <div className="admin-logo">
+        <span>Gyaan</span>
+        <strong>Bucks</strong>
+      </div>
+
+      <Menu
+        mode="inline"
+        selectedKeys={[location.pathname]}
+        className="admin-menu"
+        items={menuItems}
+        onClick={(e) => handleMenuClick(e.key)}
+      />
+    </>
+  );
+
   return (
     <Layout className="admin-shell">
       <Sider width={260} className="admin-sider">
-        <div className="admin-logo">
-          <span>Gyaan</span>
-          <strong>Bucks</strong>
-        </div>
-
-        <Menu
-          mode="inline"
-          selectedKeys={[location.pathname]}
-          className="admin-menu"
-          items={menuItems}
-          onClick={(e) => navigate(e.key)}
-        />
+        {sidebarContent}
       </Sider>
 
-      <Layout>
+      <Drawer
+        placement="left"
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        width={280}
+        className="admin-mobile-drawer"
+        styles={{ body: { padding: 0 } }}
+      >
+        {sidebarContent}
+      </Drawer>
+
+      <Layout className="admin-main-layout">
         <Header className="admin-header">
-          <div>
-            <Typography.Text className="admin-welcome">
-              Welcome back, Admin
-            </Typography.Text>
-            <Typography.Title level={4} className="admin-title">
-              GyaanBucks Control Center
-            </Typography.Title>
+          <div className="admin-header-left">
+            <Button
+              type="text"
+              icon={<MenuOutlined />}
+              onClick={() => setMobileMenuOpen(true)}
+              className="admin-menu-btn"
+            />
+
+            <div>
+              <Typography.Text className="admin-welcome">
+                Welcome back, Admin
+              </Typography.Text>
+              <Typography.Title level={4} className="admin-title">
+                GyaanBucks Control Center
+              </Typography.Title>
+            </div>
           </div>
 
           <div className="admin-header-actions">

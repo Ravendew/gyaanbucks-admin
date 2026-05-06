@@ -2,6 +2,7 @@ import {
   Button,
   Card,
   Form,
+  Grid,
   Input,
   message,
   Modal,
@@ -28,7 +29,12 @@ type Category = {
 const PAGE_KEY = 'gyaanbucks_categories_page';
 const PAGE_SIZE_KEY = 'gyaanbucks_categories_page_size';
 
+const { useBreakpoint } = Grid;
+
 export default function Categories() {
+  const screens = useBreakpoint();
+  const isMobile = !screens.md;
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [savingOrder, setSavingOrder] = useState(false);
@@ -206,6 +212,11 @@ export default function Categories() {
     }
   };
 
+  const pagedMobileCategories = sortedCategories.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
+
   const columns: ColumnsType<Category> = [
     {
       title: 'Order',
@@ -244,7 +255,7 @@ export default function Categories() {
       title: 'Category',
       dataIndex: 'name',
       render: (_, record) => (
-        <div>
+        <div style={{ minWidth: 220 }}>
           <Typography.Text strong>{record.name}</Typography.Text>
           <br />
           <Typography.Text type="secondary">
@@ -298,6 +309,7 @@ export default function Categories() {
             description="This will remove this category."
             okText="Delete"
             cancelText="Cancel"
+            okButtonProps={{ danger: true }}
             onConfirm={() => handleDelete(record.id)}
           >
             <Button danger>Delete</Button>
@@ -307,74 +319,240 @@ export default function Categories() {
     },
   ];
 
+  const renderMobileCards = () => {
+    if (loading) {
+      return (
+        <Typography.Text type="secondary">
+          Loading categories...
+        </Typography.Text>
+      );
+    }
+
+    if (sortedCategories.length === 0) {
+      return (
+        <Typography.Text type="secondary">No categories found.</Typography.Text>
+      );
+    }
+
+    return (
+      <Space direction="vertical" size={14} style={{ width: '100%' }}>
+        {pagedMobileCategories.map((category, index) => {
+          const realIndex = (currentPage - 1) * pageSize + index + 1;
+
+          return (
+            <Card
+              key={category.id}
+              style={{
+                borderRadius: 18,
+                boxShadow: '0 12px 34px rgba(6, 95, 70, 0.08)',
+              }}
+              styles={{ body: { padding: 16 } }}
+            >
+              <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                <Space align="start" style={{ width: '100%' }}>
+                  <div
+                    style={{
+                      width: 46,
+                      height: 46,
+                      display: 'grid',
+                      placeItems: 'center',
+                      borderRadius: 14,
+                      background: '#ECFDF5',
+                      fontSize: 24,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {category.icon || '📚'}
+                  </div>
+
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <Typography.Text type="secondary">
+                      #{realIndex}
+                    </Typography.Text>
+                    <br />
+                    <Typography.Text strong style={{ fontSize: 16 }}>
+                      {category.name}
+                    </Typography.Text>
+                    <br />
+                    <Typography.Text type="secondary">
+                      {category.description || 'No description added'}
+                    </Typography.Text>
+                  </div>
+                </Space>
+
+                <Space wrap>
+                  {category.isActive ? (
+                    <Typography.Text type="success">Active</Typography.Text>
+                  ) : (
+                    <Typography.Text type="danger">Inactive</Typography.Text>
+                  )}
+
+                  <Typography.Text type="secondary">
+                    {new Date(category.createdAt).toLocaleDateString()}
+                  </Typography.Text>
+                </Space>
+
+                <Space wrap>
+                  <Button size="small" onClick={() => moveToTop(category)}>
+                    Top
+                  </Button>
+                  <Button size="small" onClick={() => moveUp(category)}>
+                    Up
+                  </Button>
+                  <Button size="small" onClick={() => moveDown(category)}>
+                    Down
+                  </Button>
+                </Space>
+
+                <Space wrap>
+                  <Button onClick={() => openEditModal(category)}>Edit</Button>
+
+                  <Popconfirm
+                    title="Delete category?"
+                    description="This will remove this category."
+                    okText="Delete"
+                    cancelText="Cancel"
+                    okButtonProps={{ danger: true }}
+                    onConfirm={() => handleDelete(category.id)}
+                  >
+                    <Button danger>Delete</Button>
+                  </Popconfirm>
+                </Space>
+              </Space>
+            </Card>
+          );
+        })}
+
+        {sortedCategories.length > pageSize && (
+          <Space wrap style={{ justifyContent: 'center', width: '100%' }}>
+            <Button
+              disabled={currentPage <= 1}
+              onClick={() => {
+                const page = currentPage - 1;
+                setCurrentPage(page);
+                localStorage.setItem(PAGE_KEY, String(page));
+              }}
+            >
+              Previous
+            </Button>
+
+            <Typography.Text strong>
+              Page {currentPage} of{' '}
+              {Math.ceil(sortedCategories.length / pageSize)}
+            </Typography.Text>
+
+            <Button
+              disabled={
+                currentPage >= Math.ceil(sortedCategories.length / pageSize)
+              }
+              onClick={() => {
+                const page = currentPage + 1;
+                setCurrentPage(page);
+                localStorage.setItem(PAGE_KEY, String(page));
+              }}
+            >
+              Next
+            </Button>
+          </Space>
+        )}
+      </Space>
+    );
+  };
+
   return (
-    <Card>
+    <Card
+      style={{
+        borderRadius: isMobile ? 18 : 24,
+      }}
+      styles={{
+        body: {
+          padding: isMobile ? 16 : 24,
+        },
+      }}
+    >
       <Space
+        direction={isMobile ? 'vertical' : 'horizontal'}
         style={{
           width: '100%',
           justifyContent: 'space-between',
+          alignItems: isMobile ? 'stretch' : 'center',
           marginBottom: 20,
         }}
       >
         <div>
-          <Typography.Title level={3} style={{ margin: 0 }}>
+          <Typography.Title
+            level={3}
+            style={{ margin: 0, fontSize: isMobile ? 24 : 26 }}
+          >
             Categories
           </Typography.Title>
           <Typography.Text type="secondary">
-            Drag rows, use Top/Up/Down, then save order.
+            Drag rows on desktop, or use Top/Up/Down, then save order.
           </Typography.Text>
         </div>
 
-        <Space>
-          <Button onClick={handleSaveOrder} loading={savingOrder}>
+        <Space
+          direction={isMobile ? 'vertical' : 'horizontal'}
+          style={{ width: isMobile ? '100%' : 'auto' }}
+        >
+          <Button
+            onClick={handleSaveOrder}
+            loading={savingOrder}
+            block={isMobile}
+          >
             Save Order
           </Button>
 
-          <Button type="primary" onClick={openAddModal}>
+          <Button type="primary" onClick={openAddModal} block={isMobile}>
             Add Category
           </Button>
         </Space>
       </Space>
 
-      <Table
-        rowKey="id"
-        loading={loading}
-        columns={columns}
-        dataSource={sortedCategories}
-        pagination={{
-          current: currentPage,
-          pageSize,
-          showSizeChanger: true,
-          pageSizeOptions: ['10', '20', '50'],
-          onChange: (page, size) => {
-            setCurrentPage(page);
-            setPageSize(size);
-            localStorage.setItem(PAGE_KEY, String(page));
-            localStorage.setItem(PAGE_SIZE_KEY, String(size));
-          },
-        }}
-        onRow={(record) => ({
-          draggable: true,
-          onDragStart: () => {
-            setDraggedId(record.id);
-          },
-          onDragOver: (event) => {
-            event.preventDefault();
-          },
-          onDrop: () => {
-            if (draggedId) {
-              moveCategory(draggedId, record.id);
-            }
-            setDraggedId(null);
-          },
-          onDragEnd: () => {
-            setDraggedId(null);
-          },
-          style: {
-            cursor: 'move',
-          },
-        })}
-      />
+      {isMobile ? (
+        renderMobileCards()
+      ) : (
+        <Table
+          rowKey="id"
+          loading={loading}
+          columns={columns}
+          dataSource={sortedCategories}
+          scroll={{ x: 1150 }}
+          pagination={{
+            current: currentPage,
+            pageSize,
+            showSizeChanger: true,
+            pageSizeOptions: ['10', '20', '50'],
+            onChange: (page, size) => {
+              setCurrentPage(page);
+              setPageSize(size);
+              localStorage.setItem(PAGE_KEY, String(page));
+              localStorage.setItem(PAGE_SIZE_KEY, String(size));
+            },
+          }}
+          onRow={(record) => ({
+            draggable: true,
+            onDragStart: () => {
+              setDraggedId(record.id);
+            },
+            onDragOver: (event) => {
+              event.preventDefault();
+            },
+            onDrop: () => {
+              if (draggedId) {
+                moveCategory(draggedId, record.id);
+              }
+              setDraggedId(null);
+            },
+            onDragEnd: () => {
+              setDraggedId(null);
+            },
+            style: {
+              cursor: 'move',
+            },
+          })}
+        />
+      )}
 
       <Modal
         title={editingCategory ? 'Edit Category' : 'Add Category'}
@@ -387,6 +565,8 @@ export default function Categories() {
         onOk={handleSubmit}
         okText={editingCategory ? 'Update' : 'Create'}
         destroyOnHidden
+        width={isMobile ? 'calc(100vw - 24px)' : 520}
+        centered
       >
         <Form form={form} layout="vertical">
           <Form.Item
@@ -394,7 +574,7 @@ export default function Categories() {
             name="name"
             rules={[{ required: true, message: 'Please enter category name' }]}
           >
-            <Input placeholder="Example: General" />
+            <Input placeholder="Example: General Knowledge" />
           </Form.Item>
 
           <Form.Item label="Description" name="description">
@@ -402,7 +582,7 @@ export default function Categories() {
               rows={3}
               maxLength={140}
               showCount
-              placeholder="Example: Test your overall knowledge."
+              placeholder="Example: Practice useful questions and improve your knowledge."
             />
           </Form.Item>
 

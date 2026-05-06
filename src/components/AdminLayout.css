@@ -3,6 +3,10 @@
   background: #f7f9fc;
 }
 
+.admin-main-layout {
+  min-width: 0;
+}
+
 .admin-sider {
   background: linear-gradient(180deg, #065f46 0%, #043d31 100%) !important;
   border-right: 1px solid rgba(248, 197, 44, 0.2);
@@ -61,6 +65,24 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 28px !important;
+  gap: 16px;
+}
+
+.admin-header-left {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-menu-btn {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  color: #065f46;
+  background: #ecfdf5;
+  border: 1px solid rgba(22, 163, 74, 0.16);
 }
 
 .admin-welcome {
@@ -79,6 +101,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .admin-status {
@@ -89,6 +112,7 @@
   border-radius: 999px;
   font-size: 12px;
   font-weight: 900;
+  white-space: nowrap;
 }
 
 .admin-logout-btn {
@@ -98,6 +122,133 @@
 }
 
 .admin-content {
+  min-width: 0;
   padding: 28px;
   background: linear-gradient(180deg, #f7f9fc, #ecfdf5);
+  overflow-x: hidden;
+}
+
+.admin-mobile-drawer .ant-drawer-content {
+  background: linear-gradient(180deg, #065f46 0%, #043d31 100%) !important;
+}
+
+.admin-mobile-drawer .ant-drawer-header {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .admin-sider {
+    display: none;
+  }
+
+  .admin-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .admin-header {
+    height: auto;
+    min-height: 74px;
+    padding: 12px 14px !important;
+  }
+
+  .admin-title {
+    font-size: 17px !important;
+    line-height: 1.25 !important;
+  }
+
+  .admin-welcome {
+    font-size: 12px;
+  }
+
+  .admin-status {
+    display: none;
+  }
+
+  .admin-content {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 520px) {
+  .admin-header {
+    align-items: flex-start;
+  }
+
+  .admin-header-actions {
+    padding-top: 2px;
+  }
+
+  .admin-logout-btn {
+    width: 40px;
+    padding: 0 !important;
+  }
+
+  .admin-logout-btn span:not(.anticon) {
+    display: none;
+  }
+
+  .admin-content {
+    padding: 12px;
+  }
+}
+
+.admin-mobile-drawer .admin-logo span {
+  color: #ffffff !important;
+}
+
+.admin-mobile-drawer .admin-logo strong {
+  color: #f8c52c !important;
+}
+
+.admin-mobile-drawer .admin-menu .ant-menu-item,
+.admin-mobile-drawer .admin-menu .ant-menu-title-content {
+  color: rgba(255, 255, 255, 0.86) !important;
+}
+
+.admin-mobile-drawer .admin-menu .ant-menu-item .anticon {
+  color: rgba(255, 255, 255, 0.86) !important;
+}
+
+.admin-mobile-drawer .admin-menu .ant-menu-item-selected,
+.admin-mobile-drawer
+  .admin-menu
+  .ant-menu-item-selected
+  .ant-menu-title-content,
+.admin-mobile-drawer .admin-menu .ant-menu-item-selected .anticon {
+  color: #065f46 !important;
+}
+
+.admin-mobile-drawer,
+.admin-mobile-drawer .ant-drawer-content,
+.admin-mobile-drawer .ant-drawer-wrapper-body,
+.admin-mobile-drawer .ant-drawer-body {
+  background: linear-gradient(180deg, #065f46 0%, #043d31 100%) !important;
+}
+
+.admin-mobile-drawer .admin-menu {
+  background: transparent !important;
+}
+
+.admin-mobile-drawer .admin-menu .ant-menu-item {
+  color: rgba(255, 255, 255, 0.86) !important;
+}
+
+.admin-mobile-drawer .admin-menu .ant-menu-item .anticon,
+.admin-mobile-drawer .admin-menu .ant-menu-title-content {
+  color: inherit !important;
+}
+
+.admin-mobile-drawer .admin-menu .ant-menu-item-selected {
+  color: #065f46 !important;
+  background: linear-gradient(135deg, #f8c52c, #fff7d6) !important;
+}
+
+.admin-mobile-drawer .admin-menu .ant-menu-item-selected .anticon,
+.admin-mobile-drawer
+  .admin-menu
+  .ant-menu-item-selected
+  .ant-menu-title-content {
+  color: #065f46 !important;
 }
