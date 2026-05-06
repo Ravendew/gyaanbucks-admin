@@ -91,9 +91,9 @@ export default function Blogs() {
   };
 
   useEffect(() => {
-    loadBlogs();
+    void loadBlogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
   const openCreate = () => {
     setEditingBlog(null);
     setPreviewImage('');
@@ -152,10 +152,7 @@ export default function Blogs() {
         return;
       }
 
-      form.setFieldsValue({
-        imageUrl: uploadedUrl,
-      });
-
+      form.setFieldsValue({ imageUrl: uploadedUrl });
       setPreviewImage(uploadedUrl);
       setUploading(false);
       message.success('Image uploaded successfully');
@@ -173,9 +170,7 @@ export default function Blogs() {
     const currentSlug = form.getFieldValue('slug');
 
     if (!editingBlog && !currentSlug) {
-      form.setFieldsValue({
-        slug: makeSlug(title),
-      });
+      form.setFieldsValue({ slug: makeSlug(title) });
     }
   };
 
@@ -183,9 +178,12 @@ export default function Blogs() {
     try {
       const values = await form.validateFields();
 
-      const cleanContent = values.content?.trim();
+      const cleanContent = values.content
+        ?.replace(/<p><br><\/p>/g, '')
+        .replace(/<p><\/p>/g, '')
+        .trim();
 
-      if (!cleanContent || cleanContent === '<p><br></p>') {
+      if (!cleanContent) {
         message.error('Please add blog content');
         return;
       }
@@ -373,9 +371,7 @@ export default function Blogs() {
           form={form}
           layout="vertical"
           requiredMark
-          initialValues={{
-            isPublished: true,
-          }}
+          initialValues={{ isPublished: true }}
         >
           <Form.Item
             label="Title"
@@ -415,14 +411,13 @@ export default function Blogs() {
             name="content"
             rules={[{ required: true, message: 'Please add blog content' }]}
           >
-            <div className="blog-editor-box">
-              <ReactQuill
-                theme="snow"
-                modules={editorModules}
-                formats={editorFormats}
-                placeholder="Write your full blog content here..."
-              />
-            </div>
+            <ReactQuill
+              className="blog-editor-box"
+              theme="snow"
+              modules={editorModules}
+              formats={editorFormats}
+              placeholder="Write your full blog content here..."
+            />
           </Form.Item>
 
           <Form.Item label="Featured Image" name="imageUrl">
@@ -459,11 +454,11 @@ export default function Blogs() {
             rules={[{ required: true, message: 'Please enter category' }]}
             style={{ marginTop: 18 }}
           >
-            <Input placeholder="Example: Online Earning" />
+            <Input placeholder="Example: Education" />
           </Form.Item>
 
           <Form.Item label="Tags" name="tags">
-            <Input placeholder="quiz earning, online earning, gyaanbucks" />
+            <Input placeholder="general knowledge, GK tips, quiz learning" />
           </Form.Item>
 
           <Form.Item label="Meta Title" name="metaTitle">
